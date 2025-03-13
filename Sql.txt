@@ -1,0 +1,23 @@
+--1
+Select * from Orders
+where OrderDate >= curdate() - interval 30 day;
+ --2
+select CustomerID, count(OrderID) as OrderCount
+from Orders
+group by CustomerID
+order by OrderCount desc
+limit 1;
+--3
+select * from Products
+where ProductID not in (selsct distinc ProductID from OrderDetails);
+ --4
+select p.ProductID, p.ProductName, sum(od.Quantity * od.UnitPrice) as TotalRevenue
+from OrderDetails od
+join Products p ON od.ProductID = p.ProductID
+group by p.ProductID, p.ProductName;
+--5
+select o.CustomerID, count(o.OrderID) as TotalOrders, sum(od.Quantity) as TotalProducts
+from Orders o
+join OrderDetails od on o.OrderID = od.OrderID
+where year(o.OrderDate) = 2024
+group by o.CustomerID;
