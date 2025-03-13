@@ -36,7 +36,6 @@ public class TelegramBotListener
         _userService = userService;
     }
 
-    
     public string EscapeMarkdownV2(string text)
     {
         string[] specialChars = { "[", "]", "(", ")", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!" };
@@ -47,7 +46,6 @@ public class TelegramBotListener
         return text;
     }
 
-  
     private bool ValidateFNameAndLName(string name)
     {
         foreach (var l in name)
@@ -76,14 +74,14 @@ public class TelegramBotListener
     {
         email.ToLower();
 
-        return email.EndsWith("@gmail.com") && !string.IsNullOrEmpty(email) && email.Length <= 200 && email.Length > 10;
+        return email.EndsWith("@gmail.com") && !string.IsNullOrEmpty(email) && email.Length <= 200 && email.Length > 11;
     }
 
     public async Task StartBot()
     {
         var receiverOptions = new ReceiverOptions { AllowedUpdates = new[] { UpdateType.Message, UpdateType.InlineQuery } };
 
-        Console.WriteLine("Your bot is starting");
+        Console.WriteLine("Running...");
 
         BotClient.StartReceiving(
             HandleUpdateAsync,
@@ -111,7 +109,8 @@ public class TelegramBotListener
             }
 
             Console.WriteLine($"{user.Id},  {user.FirstName}, {message.Text}");
-            if (message.Text == "/send")
+
+            if (message.Text == "AllChat")
             {
                 if (userObject.TelegramUserId == AdminID)
                 {
@@ -208,7 +207,7 @@ public class TelegramBotListener
                 info.Email = message.Text;
                 info.Email.ToLower();
                 UserForUserInfo[user.Id] = "Phone";
-                await bot.SendTextMessageAsync(user.Id, "Enter your phone number (505709110 format):", cancellationToken: cancellationToken);
+                await bot.SendTextMessageAsync(user.Id, "Enter your phone number (909009090 format):", cancellationToken: cancellationToken);
             }
 
             else if (UserForUserInfo.ContainsKey(user.Id) && UserForUserInfo[user.Id] == "Phone")
@@ -236,7 +235,7 @@ public class TelegramBotListener
                 var info = UserInfos[user.Id];
                 info.Address = message.Text;
                 UserForUserInfo[user.Id] = "Summary";
-                await bot.SendTextMessageAsync(user.Id, "Enter your summary: ", cancellationToken: cancellationToken);
+                await bot.SendTextMessageAsync(user.Id, "Enter summary: ", cancellationToken: cancellationToken);
             }
 
             else if (UserForUserInfo.ContainsKey(user.Id) && UserForUserInfo[user.Id] == "Summary")
@@ -333,17 +332,10 @@ public class TelegramBotListener
                                         {
                                             new KeyboardButton("Delete Information"),
                                         },
-                   
-
                                     })
                 { ResizeKeyboard = true };
 
-
-                await bot.SendTextMessageAsync(user.Id, "Hello 👋", replyMarkup: keyboard);
-                if (userObject.TelegramUserId == AdminID)
-                {
-                    await bot.SendTextMessageAsync(user.Id, "For send massage: /send ", replyMarkup: keyboard);
-                }
+                await bot.SendTextMessageAsync(user.Id, "Hello ", replyMarkup: keyboard);
                 return;
             }
         }
@@ -354,6 +346,15 @@ public class TelegramBotListener
             var text = update.CallbackQuery.Data;
 
             CallbackQuery res = update.CallbackQuery;
+        }
+    }
+
+    public async Task SendMessageToAllUsers(string message, CancellationToken cancellationToken)
+    {
+        var users = await _userService.GetAllUser();
+        foreach (var user in users)
+        {
+            await BotClient.SendTextMessageAsync(user.TelegramUserId, message, cancellationToken: cancellationToken);
         }
     }
 
